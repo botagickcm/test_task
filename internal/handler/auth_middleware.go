@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 	"strings"
+	"test_task/internal/models"
 	"test_task/internal/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
@@ -10,38 +12,69 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		logger := slog.Default()
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"success": false,
-				"message": "Authorization header required",
+			logger.Warn("Отсутствует Authorization header")
+			c.JSON(http.StatusUnauthorized, models.ServerResponse{
+				Status: "error",
+				Error:  "Authorization header required",
 			})
 			c.Abort()
 			return
 		}
 
-		
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"success": false,
-				"message": "Invalid authorization format. Use Bearer <token>",
+		var tokenString string
+
+		// Удаляем возможные пробелы в начале и конце
+		authHeader = strings.TrimSpace(authHeader)
+
+		// Вариант 1: Если есть "Bearer " префикс
+		if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
+			tokenString = strings.TrimSpace(authHeader[7:]) // Убираем "Bearer "
+		} else {
+			// Проверяем, может быть токен отправлен как "Bearer<token>" без пробела
+			if strings.HasPrefix(strings.ToLower(authHeader), "bearer") && len(authHeader) > 6 {
+				tokenString = strings.TrimSpace(authHeader[6:])
+			} else {
+				// Просто токен
+				tokenString = authHeader
+			}
+		}
+
+		// Дополнительная очистка
+		tokenString = strings.TrimSpace(tokenString)
+
+		if tokenString == "" {
+			logger.Warn("Пустой токен", "original_header", authHeader)
+			c.JSON(http.StatusUnauthorized, models.ServerResponse{
+				Status: "error",
+				Error:  "Token is empty",
 			})
 			c.Abort()
 			return
 		}
 
-		tokenString := parts[1]
+		// Логирование для отладки
+		logger.Debug("Проверка токена",
+			"original_header", authHeader,
+			"extracted_token_length", len(tokenString),
+			"token_prefix", "***"+tokenString[len(tokenString)-10:], // последние 10 символов
+		)
+
 		claims, err := jwt.ValidateToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"success": false,
-				"message": "Invalid or expired token",
+			logger.Warn("Невалидный токен", "error", err.Error(), "token_length", len(tokenString))
+			c.JSON(http.StatusUnauthorized, models.ServerResponse{
+				Status: "error",
+				Error:  "Invalid or expired token",
 			})
 			c.Abort()
 			return
 		}
+
 		c.Set("userID", claims.UserID)
+		logger.Debug("Токен валиден", "user_id", claims.UserID)
 		c.Next()
 	}
 }

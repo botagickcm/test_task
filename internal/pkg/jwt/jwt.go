@@ -2,23 +2,21 @@ package jwt
 
 import (
 	"errors"
-	"os"
+	"fmt"
+
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 )
 
 var jwtSecret []byte
 
-func init() {
-
-	godotenv.Load()
-	secret := os.Getenv("JWT_SECRET")
+func Init(secret string) {
 	if secret == "" {
-		secret = "your-super-secret-jwt-key-change-this-in-production"
+		panic("JWT_SECRET не может быть пустым")
 	}
 	jwtSecret = []byte(secret)
+	fmt.Printf("JWT секрет загружен, длина: %d символов\n", len(secret))
 }
 
 type Claims struct {

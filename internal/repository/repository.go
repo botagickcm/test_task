@@ -1,4 +1,3 @@
-// internal/repository/user_repository.go
 package repository
 
 import (
@@ -12,11 +11,11 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, user *models.User) error
-	GetByID(ctx context.Context, id int64) (*models.User, error) // Измените на int64
+	GetByID(ctx context.Context, id int64) (*models.User, error)
 	GetByLogin(ctx context.Context, login string) (*models.User, error)
 	GetAll(ctx context.Context) ([]models.User, error)
 	Update(ctx context.Context, user *models.User) error
-	Delete(ctx context.Context, id int64) error // Измените на int64
+	Delete(ctx context.Context, id int64) error
 }
 
 type userRepository struct {

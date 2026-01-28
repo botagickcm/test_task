@@ -32,7 +32,6 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-// Хеширование пароля
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
@@ -103,9 +102,11 @@ func (s *userService) GetAllUsers(ctx context.Context) ([]models.User, error) {
 func (s *userService) UpdateUser(ctx context.Context, id int64, req models.UpdateUserRequest) (*models.User, error) {
 
 	user, err := s.repo.GetByID(ctx, id)
+
 	if err != nil {
 		return nil, err
 	}
+
 	if user == nil {
 		return nil, errors.New("user not found")
 	}
@@ -117,7 +118,6 @@ func (s *userService) UpdateUser(ctx context.Context, id int64, req models.Updat
 		user.LastName = sql.NullString{String: req.LastName, Valid: true}
 	}
 	if req.Login != "" {
-
 		if req.Login != user.Login {
 			existingUser, err := s.repo.GetByLogin(ctx, req.Login)
 			if err != nil {
@@ -130,7 +130,6 @@ func (s *userService) UpdateUser(ctx context.Context, id int64, req models.Updat
 		}
 	}
 	if req.Password != "" {
-
 		hashedPassword, err := hashPassword(req.Password)
 		if err != nil {
 			return nil, err
@@ -149,7 +148,6 @@ func (s *userService) UpdateUser(ctx context.Context, id int64, req models.Updat
 }
 
 func (s *userService) DeleteUser(ctx context.Context, id int64) error {
-
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -157,7 +155,6 @@ func (s *userService) DeleteUser(ctx context.Context, id int64) error {
 	if user == nil {
 		return errors.New("user not found")
 	}
-
 	return s.repo.Delete(ctx, id)
 }
 
