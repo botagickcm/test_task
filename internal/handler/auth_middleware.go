@@ -26,23 +26,20 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		var tokenString string
 
-		// Удаляем возможные пробелы в начале и конце
 		authHeader = strings.TrimSpace(authHeader)
 
-		// Вариант 1: Если есть "Bearer " префикс
 		if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
-			tokenString = strings.TrimSpace(authHeader[7:]) // Убираем "Bearer "
+			tokenString = strings.TrimSpace(authHeader[7:])
 		} else {
-			// Проверяем, может быть токен отправлен как "Bearer<token>" без пробела
+
 			if strings.HasPrefix(strings.ToLower(authHeader), "bearer") && len(authHeader) > 6 {
 				tokenString = strings.TrimSpace(authHeader[6:])
 			} else {
-				// Просто токен
+
 				tokenString = authHeader
 			}
 		}
 
-		// Дополнительная очистка
 		tokenString = strings.TrimSpace(tokenString)
 
 		if tokenString == "" {
