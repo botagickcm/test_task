@@ -1,6 +1,6 @@
 
 .env
-
+docker.env
 
 /go-build/
 /go-build-sum/
