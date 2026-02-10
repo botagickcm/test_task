@@ -7,4 +7,4 @@ docker-compose.yml
 
 
 /go-build/
-/go-build-sum/
+/go-build-sum/docker.env
