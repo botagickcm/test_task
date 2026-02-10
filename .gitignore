@@ -1,6 +1,10 @@
+docker.env
+.dockerignore
+Dockerfile
+docker-compose.yml
 
 .env
-docker.env
+
 
 /go-build/
 /go-build-sum/
